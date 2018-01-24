@@ -1,6 +1,7 @@
 recipe.sh
 system.sh
 linux-imx
+KERNEL
 dl
 deploy
 ignore
