@@ -1,22 +1,12 @@
 #!/bin/sh -e
 DIR=$PWD
 
-DST=/media/zhe/boot
 DSR=/media/zhe/rootfs
-if [ x"$1" = x"" ] ; then
-	echo "Not input sd card boot dir, use default ${DST}"
-else
-	DST=$1
-fi
-if [ ! -d ${DST} ] ; then
-	echo "${DST} not exsit"
-	exit 1
-fi
 
-if [ x"$2" = x"" ] ; then
+if [ x"$1" = x"" ] ; then
 	echo "Not input sd card rootfs dir, use default ${DSR}"
 else
-	DST=$2
+	DSR=$1
 fi
 
 if [ ! -d ${DSR} ] ; then
@@ -38,15 +28,15 @@ untar_pkg () {
 		dst_dir=${DSR}/lib/firmware/
 		;;
 	dtbs)
-		dst_dir=${DST}/boot/dtbs/${KERNEL_UTS}/
+		dst_dir=${DSR}/boot/dtbs/${KERNEL_UTS}/
 		;;
 	esac
 
-	mkdir -p ${dst_dir}
+	sudo mkdir -p ${dst_dir}
 	tar_options="xvf"
 	if [ -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
 		echo "tar ${tar_options} ${DIR}/deploy/${KERNEL_UTS}${deployfile} -C ${dst_dir}"
-		tar ${tar_options} ${DIR}/deploy/${KERNEL_UTS}${deployfile} -C ${dst_dir}
+		sudo tar ${tar_options} ${DIR}/deploy/${KERNEL_UTS}${deployfile} -C ${dst_dir}
 	else
 		exit 3
 	fi
@@ -56,15 +46,13 @@ image="zImage"
 
 # kernel
 if [ -f "${DIR}/deploy/${KERNEL_UTS}.${image}" ] ; then
-	mkdir -p ${DST}/boot
-	cp -v ${DIR}/deploy/${KERNEL_UTS}.${image} ${DST}/boot/vmlinuz-${KERNEL_UTS}
+	sudo mkdir -p ${DSR}/boot
+	sudo cp -v ${DIR}/deploy/${KERNEL_UTS}.${image} ${DSR}/boot/vmlinuz-${KERNEL_UTS}
 	# uEnv.txt
 	unset older_kernel
 	unset location
-	if [ -f "${DST}/boot/uEnv.txt" ] ; then
-		location=${DST}/boot/
-	elif [ -f "${DST}/uEnv.txt" ] ; then
-		location=${DST}/
+	if [ -f "${DSR}/boot/uEnv.txt" ] ; then
+		location=${DSR}/boot/
 	fi
 	if [ ! "x${location}" = "x" ] ; then
 		older_kernel=$(grep uname_r "${location}/uEnv.txt" | grep -v '#' | awk -F"=" '{print $2}' || true)
@@ -77,6 +65,7 @@ if [ -f "${DIR}/deploy/${KERNEL_UTS}.${image}" ] ; then
 		fi
 	else
 		echo "File uEnv.txt not exsit"
+		sudo sh -c "echo 'uname_r=${KERNEL_UTS}' >> ${DSR}/boot/uEnv.txt"
 	fi
 else
 	echo "File [${KERNEL_UTS}.${image}] not exsit"
@@ -91,4 +80,6 @@ untar_pkg
 pkg="modules"
 untar_pkg
 
-
+# firmware
+#pkg="firmware"
+#untar_pkg
