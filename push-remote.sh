@@ -1,7 +1,7 @@
 #!/bin/sh -e
 DIR=$PWD
 
-REMOTE=ubuntu@192.168.1.2
+REMOTE=ubuntu@192.168.1.3
 REMOTE_DSR=/home/ubuntu/kernel-deploy
 DSR=${REMOTE}:${REMOTE_DSR}
 passwd=temppwd
@@ -56,5 +56,5 @@ pkg="modules"
 scp_pkg
 
 # firmware
-#pkg="firmware"
-#untar_pkg
+pkg="firmware"
+untar_pkg

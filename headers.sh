@@ -92,6 +92,9 @@ make_pkg () {
 			find ./arch/${KERNEL_ARCH}/boot/ -iname "*.dtb" -exec cp -v '{}' "${DIR}/deploy/tmp/" \;
 		fi
 		;;
+	headers)
+		make -s ARCH=${KERNEL_ARCH} LOCALVERSION=${BUILD} CROSS_COMPILE="${CC}" headers_install INSTALL_HDR_PATH="${DIR}/deploy/tmp"
+		;;
 	esac
 
 	echo "Compressing ${KERNEL_UTS}${deployfile}..."
@@ -124,14 +127,20 @@ make_dtbs_pkg () {
 	make_pkg
 }
 
+make_headers () {
+	pkg="headers"
+	make_pkg
+}
 
-make_kernel
-make_modules_pkg
-make_firmware_pkg
+#make_kernel
+#make_modules_pkg
+#make_firmware_pkg
+KERNEL_UTS=$(cat "${DIR}/KERNEL/include/generated/utsrelease.h" | awk '{print $3}' | sed 's/\"//g' )
+make_headers
 
-if grep -q dtbs "${DIR}/KERNEL/arch/${KERNEL_ARCH}/Makefile"; then
-	make_dtbs_pkg
-fi
+#if grep -q dtbs "${DIR}/KERNEL/arch/${KERNEL_ARCH}/Makefile"; then
+#	make_dtbs_pkg
+#fi
 
 echo "-----------------------------"
 echo "Script Complete"
